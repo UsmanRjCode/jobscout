@@ -1,0 +1,40 @@
+// Database layout. Uses a simple local SQLite file (prisma/dev.db),
+// so no database server needs to be installed.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// One row each time someone clicks "Find jobs".
+model Search {
+  id             String   @id @default(cuid())
+  role           String
+  location       String
+  seniority      String
+  visaPreference String
+  keywords       String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  jobs           Job[]
+}
+
+// The jobs that came back for a search.
+model Job {
+  id       String @id @default(cuid())
+  title    String
+  url      String
+  snippet  String
+  source   String
+  score    Int
+  reasons  String // JSON array of strings (SQLite has no list type)
+  agentSummary String?
+  searchId String
+  search   Search @relation(fields: [searchId], references: [id], onDelete: Cascade)
+
+  @@index([searchId])
+}
